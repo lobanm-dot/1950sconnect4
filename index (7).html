@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a2734">
+<title>Atomic Diner • Cold War Connect Four</title>
+<style>
+  :root{--ink:#102b37;--navy:#102c39;--deep:#081f29;--teal:#29b7b7;--teal-dark:#117d85;--aqua:#9ce8dd;--cream:#fff7e6;--paper:#fffdf5;--red:#ed625a;--pink:#ff93ab;--yellow:#ffd16e;--line:#e4d7c3;--shadow:0 20px 44px rgba(4,21,30,.28)}
+  *{box-sizing:border-box} html{height:100%} body{margin:0;min-height:100%;font-family:Trebuchet MS,Arial,Helvetica,sans-serif;color:var(--ink);background:radial-gradient(ellipse at 50% -20%,#315a67 0,#0c2a39 56%,#081c27 100%);overflow-x:hidden}
+  button,input{font:inherit} button{cursor:pointer} button:disabled{cursor:not-allowed} .hidden{display:none!important}
+  .page-shell{max-width:1430px;margin:0 auto;padding:18px 24px 32px;position:relative;z-index:1}
+  .chrome-top{height:8px;border-radius:16px;background:linear-gradient(180deg,#f4fffc,#9bbbc2 32%,#315566 54%,#fff 72%,#738f9a);box-shadow:0 4px 8px #03131b}
+  .header{position:relative;text-align:center;padding:9px 0 18px;isolation:isolate}
+  .header::before,.header::after{content:'✦';position:absolute;top:36px;color:#f1c778;font-size:28px;text-shadow:0 0 20px #ffe491}
+  .header::before{left:11%}.header::after{right:11%}
+  .top-kicker{color:#fbe7bf;font-size:11px;letter-spacing:.3em;font-weight:900;text-transform:uppercase;padding-top:7px}
+  .brand{margin:0;font-family:Georgia,'Times New Roman',serif;line-height:1.05;font-weight:900;font-size:clamp(38px,5.5vw,67px);letter-spacing:.04em;color:#ffe4ab;-webkit-text-stroke:1px #ffad7e;text-shadow:3px 3px 0 #b73946,6px 6px 0 #0b111b,0 0 28px rgba(255,164,130,.35)}
+  .brand em{font-style:normal;color:#79eee3;-webkit-text-stroke:1px #26bbbc;text-shadow:3px 3px 0 #0c6576,6px 6px 0 #070e19,0 0 22px #50a8a0}
+  .brand-sub{display:inline-block;background:#dd5165;border:2px solid #ffd9c2;color:#fffbee;font-size:12px;font-weight:900;letter-spacing:.21em;border-radius:40px;padding:6px 21px;transform:rotate(-1.2deg);box-shadow:0 5px 0 #792f45;white-space:normal}
+  .marquee{width:100%;white-space:nowrap;overflow:hidden;border-block:2px solid #b8f5eb;color:#b5faf0;font-weight:800;letter-spacing:.23em;font-size:11px;line-height:26px;text-align:center;background:rgba(22,104,111,.45);border-radius:3px}
+  .marquee span{padding:0 22px}
+  .card{border-radius:16px;border:3px solid #f1d6a2;background:var(--paper);box-shadow:inset 0 0 0 5px #fffaea,var(--shadow);position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:9px;background:repeating-linear-gradient(90deg,var(--red) 0 34px,#fff5e6 34px 66px,var(--teal) 66px 100px,#fff5e6 100px 132px);opacity:.84}
+  .setup-card{max-width:950px;margin:22px auto 0;padding:34px 38px 36px}
+  .setup-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:32px;margin-top:15px}
+  .section-head{font-family:Georgia,serif;font-size:29px;margin:9px 0 8px;color:#a73e4f}
+  .muted{color:#597079}.mini-overline{text-transform:uppercase;font-size:11px;letter-spacing:.18em;font-weight:900;color:var(--teal-dark)}
+  .setup-desc{font-size:15px;line-height:1.53;max-width:690px;margin:8px 0}
+  .name-label{display:block;font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:18px 0 6px}
+  .name-label .swatch{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px}
+  .name-input{display:block;width:100%;padding:12px 13px;border-radius:9px;border:2px solid #c4d5d3;background:#fff;color:var(--ink);font-size:17px;font-weight:bold;outline-offset:3px}
+  .name-input:focus{border-color:var(--teal-dark);outline:2px solid #b8f3ea}
+  .topic-stack{display:grid;gap:8px;margin:8px 0 16px}
+  .check-row{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:800;padding:10px 11px;background:#f5f3e9;border:1px solid #e2ddcd;border-radius:8px;cursor:pointer}
+  .check-row input{width:17px;height:17px;accent-color:var(--teal-dark)}
+  .check-row small{margin-left:auto;color:#657e83;font-weight:700;white-space:nowrap}
+  .check-row.bonus{background:#fff0ea;border-color:#f2bdac}
+  .rules-box{background:#dff3ef;border-left:5px solid var(--teal-dark);padding:13px 16px;border-radius:8px;font-size:14px;line-height:1.55}
+  .rules-box p{margin:4px 0}
+  .diner-btn{border:2px solid #164551;border-radius:8px;background:#ffcf74;color:#182e32;font-weight:1000;letter-spacing:.07em;box-shadow:0 5px 0 #9b6b3c,0 8px 12px #182e3233;padding:13px 17px;text-transform:uppercase;transition:transform .08s,box-shadow .08s,filter .12s}
+  .diner-btn:hover:not(:disabled){filter:brightness(1.05)}.diner-btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 #9b6b3c}
+  .diner-btn.teal{background:#65d9ce;box-shadow:0 5px 0 #217b79,0 8px 12px #182e3233}.diner-btn.red{background:#ff7773;box-shadow:0 5px 0 #9a3e47,0 8px 12px #182e3233}.diner-btn.white{background:#f9f8eb;box-shadow:0 5px 0 #afafa0,0 8px 12px #182e3233}
+  .diner-btn:disabled{opacity:.5;filter:grayscale(.4)}
+  .start-btn{width:100%;font-size:20px;margin-top:22px;padding:17px}
+  .setup-error{color:#9d3445;font-weight:800;margin-top:10px;min-height:18px}
+  .game-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:14px auto 12px}
+  .player-hud{display:flex;align-items:center;gap:12px;padding:10px 14px;border:2px solid #bbdad5;background:#153a45;color:#fff9e9;border-radius:12px;min-width:0;box-shadow:0 5px 0 #061821;transition:border-color .15s,transform .15s}
+  .player-hud.right{flex-direction:row-reverse;text-align:right}
+  .player-hud.active{border-color:#ffe29b;background:#1b4850;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(255,224,151,.21),0 6px 0 #061821}
+  .avatar{border-radius:50%;height:52px;width:52px;flex-shrink:0;border:4px solid #f7edd8;display:grid;place-items:center;font-size:24px;box-shadow:0 3px 0 #071d22}
+  .avatar.p0{background:var(--red)}.avatar.p1{background:var(--teal)}
+  .player-data{min-width:0;flex:1}.player-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Georgia,serif;font-size:clamp(17px,2.1vw,23px);font-weight:bold}
+  .player-meta{font-size:12px;letter-spacing:.05em;color:#d6e5d9;margin-top:3px}
+  .vs-disc{background:#ffdc87;color:#8a364c;border:3px solid #f8f0d9;border-radius:50%;height:53px;width:53px;display:grid;place-items:center;font-family:Georgia,serif;font-weight:bold;font-size:24px;box-shadow:0 4px 0 #85563d}
+  .game-viewport{display:grid;grid-template-columns:minmax(320px,.95fr) minmax(420px,1.15fr);gap:19px;align-items:start}
+  .question-card,.board-card{min-height:606px}
+  .question-card{padding:25px 23px 24px}
+  .card-label{letter-spacing:.13em;color:#af4650;text-transform:uppercase;font-size:12px;font-weight:1000;margin-top:9px}
+  .question-count{font-weight:800;color:#587279;letter-spacing:.05em;font-size:12px}
+  .q-topline{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .q-category{display:inline-flex;align-items:center;gap:7px;background:#deefed;color:#075b63;border:1px solid #afd9d0;border-radius:30px;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:6px 9px;margin:15px 0 6px}
+  .q-category.jukebox{background:#ffe2e7;color:#a73e4f;border-color:#f3b7bf}
+  .question-text{font-family:Georgia,serif;color:#173743;font-size:clamp(20px,2vw,26px);font-weight:900;line-height:1.28;margin:11px 0 21px;min-height:75px}
+  .answers{display:grid;gap:10px}.answer{width:100%;display:grid;grid-template-columns:33px 1fr;align-items:center;gap:10px;min-height:62px;padding:9px 11px;text-align:left;background:#fffdf5;border:2px solid #d4d9d3;border-radius:10px;font-size:15px;line-height:1.3;color:#213d46;font-weight:700;transition:background .1s,transform .1s,border-color .1s}
+  .answer:hover:not(:disabled){background:#edf9f6;transform:translateX(3px);border-color:#71b7b4}
+  .answer .letter{border:2px solid #6d8e91;background:#eaf1ee;border-radius:6px;height:30px;display:grid;place-items:center;font-weight:1000}
+  .answer.correct{border-color:#14897c;background:#d6f4e9}.answer.correct .letter{background:#31b7a7;color:#fff;border-color:#0b6c6a}
+  .answer.wrong{border-color:#cb5e62;background:#ffe5e3}.answer.wrong .letter{background:#e66464;color:#fff;border-color:#a1434f}
+  .answer:disabled{cursor:default;opacity:1}.answer:disabled:not(.correct):not(.wrong){opacity:.61}
+  .question-bottom{margin-top:16px;min-height:42px}.hint{font-size:12px;color:#637b7d;font-weight:800;text-align:center;letter-spacing:.04em}
+  .feedback{border-radius:10px;border:2px solid #cfe5d7;padding:12px 13px;background:#eef8ee;font-size:14px;line-height:1.45;margin-top:15px}
+  .feedback.bad{background:#fff0e8;border-color:#edb9af}.feedback strong{font-size:15px}.feedback p{margin:6px 0 0}
+  .feedback-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:13px}.feedback-actions button{flex:1;min-width:140px}
+  .boost-choices{display:grid;gap:10px;margin-top:12px}.boost-choices button{text-align:left;line-height:1.35;padding:10px 13px}.boost-choices small{display:block;letter-spacing:0;font-weight:500;margin-top:4px}
+  .board-card{padding:25px 22px 21px;background:linear-gradient(180deg,#fffbf0 0%,#f7efda 100%)}
+  .board-heading{text-align:center;padding-top:7px}.board-title{font-family:Georgia,serif;font-size:30px;color:#a74250;margin:5px 0 2px;font-weight:1000}
+  .board-subtitle{font-size:13px;font-weight:800;color:#577079;min-height:21px}
+  .board-area{max-width:555px;margin:13px auto 0}
+  .drop-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin:0 12px 6px}
+  .drop-arrow{height:35px;border:2px solid #598e9b;color:#0c6272;background:#e0f8f1;border-radius:8px;font-size:23px;font-weight:bold;line-height:20px;transition:transform .12s,background .12s}
+  .drop-arrow:hover:not(:disabled){transform:translateY(-3px);background:#ffe0a6;border-color:#cf874c}
+  .drop-arrow:disabled{opacity:.3;filter:grayscale(1)}
+  .connect-board{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:repeat(6,auto);gap:8px;padding:13px;border-radius:17px;border:6px solid #67d4d0;background:linear-gradient(125deg,#17839b,#00657e 52%,#0b5d73 100%);box-shadow:inset 0 5px 15px #013a4c,0 9px 0 #07414d,0 16px 21px #0b283255}
+  .board-cell{border:0;padding:0;aspect-ratio:1/1;border-radius:50%;position:relative;background:radial-gradient(circle at 45% 42%,#173d4a 0%,#092b3a 62%,#061d2c 85%);box-shadow:inset 0 4px 8px #031924,inset 0 -2px 2px #b1fffd33,0 2px 0 #8be4e83a}
+  .board-cell.clickable{cursor:pointer}.board-cell.clickable:hover{outline:3px solid #ffe5a5;outline-offset:2px}
+  .board-cell:disabled{cursor:default}.board-cell .disc{position:absolute;inset:3px;border-radius:50%;box-shadow:inset 0 -6px 0 rgba(0,0,0,.18),inset 0 5px 0 rgba(255,255,255,.45),0 2px 8px #011d2d88}
+  .disc.p0{background:radial-gradient(circle at 34% 26%,#ffc6bb 0%,#f66e6a 28%,#cf4058 79%,#9d2b4b 100%);border:2px solid #a72f51}
+  .disc.p1{background:radial-gradient(circle at 34% 26%,#caffef 0%,#46ceca 28%,#0c969f 78%,#08687d 100%);border:2px solid #097c8a}
+  .disc::after{content:'';position:absolute;inset:18%;border:2px solid rgba(255,255,255,.29);border-radius:50%}
+  .board-cell.winning .disc{outline:4px solid #ffda65;outline-offset:2px;box-shadow:0 0 20px #fff0a9,inset 0 3px #fff8}
+  .board-cell.newdrop .disc{animation:pop-in .26s ease-out both}@keyframes pop-in{from{transform:translateY(-48px) scale(.78);opacity:.35}to{transform:translateY(0) scale(1);opacity:1}}
+  .board-legend{display:flex;justify-content:center;gap:22px;margin-top:24px;font-weight:900;font-size:13px;color:#3b5961;flex-wrap:wrap}
+  .legend-dot{width:14px;height:14px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:-2px;border:2px solid #fff}
+  .board-status{text-align:center;min-height:19px;color:#8b4c4b;font-size:13px;font-weight:800;margin:14px 0 0}
+  .lower-strip{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:16px auto 0;color:#f7e4b9;font-size:11px;text-transform:uppercase;letter-spacing:.14em;font-weight:900}
+  .tiny-controls{display:flex;align-items:center;gap:9px}.tiny-btn{border:1px solid #7ea6ad;color:#e4f1e8;background:#1e4b58;border-radius:6px;padding:7px 10px;font-size:11px;font-weight:900;letter-spacing:.04em}.tiny-btn:hover{background:#2a6874}
+  .end-cover{position:fixed;inset:0;z-index:15;background:rgba(0,15,24,.79);display:grid;place-items:center;padding:16px;overflow-y:auto}.end-modal{width:min(590px,100%);background:var(--paper);border:7px double #edc784;border-radius:21px;text-align:center;padding:35px 26px;box-shadow:0 30px 90px #0008}
+  .end-icon{font-size:56px;line-height:1.2}.end-title{font-family:Georgia,serif;color:#ba4157;font-size:43px;line-height:1.1;margin:8px 0}.end-text{font-size:18px;line-height:1.4;margin:8px 0 23px;color:#355861}
+  .end-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+  .toast{position:fixed;z-index:21;bottom:27px;left:50%;transform:translateX(-50%);padding:10px 19px;border-radius:9px;background:#ffdfac;border:2px solid #ad5e4a;color:#3a3433;font-weight:900;box-shadow:0 9px 35px #0005;max-width:calc(100vw - 20px);text-align:center}
+  .help-body{font-size:16px;line-height:1.62;text-align:left}.help-body ul{padding-left:22px}.help-body li{margin-bottom:8px}
+  .checker{height:14px;margin-top:20px;background:conic-gradient(#eee7d8 25%,#172e39 0 50%,#eee7d8 0 75%,#172e39 0) 0 0 / 28px 28px;border-block:2px solid #fff9e3}
+  @media (max-width:940px){.game-viewport{grid-template-columns:1fr}.question-card,.board-card{min-height:unset}.question-text{min-height:unset}.board-area{max-width:530px}.page-shell{max-width:710px}.game-top{gap:6px}.player-hud{padding:8px}.avatar{height:38px;width:38px;font-size:19px}.player-name{font-size:16px}.vs-disc{height:36px;width:36px;font-size:15px}.player-meta{font-size:10px}}
+  @media (max-width:620px){.page-shell{padding:11px 11px 20px}.header::before,.header::after{display:none}.brand{font-size:38px}.top-kicker{font-size:10px;letter-spacing:.1em}.brand-sub{font-size:9px;letter-spacing:.09em}.marquee{font-size:9px}.setup-card{padding:23px 15px}.setup-grid{grid-template-columns:1fr;gap:10px}.section-head{font-size:25px}.game-top{grid-template-columns:minmax(0,1fr) 31px minmax(0,1fr)}.player-hud{gap:6px;padding:7px 5px}.avatar{height:30px;width:30px;border-width:2px;font-size:15px}.player-name{font-size:13px}.player-meta{font-size:9px}.vs-disc{height:29px;width:29px;font-size:11px;border-width:2px}.question-card,.board-card{padding:23px 13px 16px}.question-text{font-size:20px}.answer{font-size:14px;min-height:55px;padding:8px}.connect-board{gap:5px;padding:8px;border-width:4px;border-radius:12px}.board-cell .disc{inset:2px}.drop-row{gap:5px;margin-inline:7px}.drop-arrow{height:30px;font-size:18px}.board-title{font-size:25px}.lower-strip{flex-direction:column;gap:12px;text-align:center}}
+  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page-shell">
+  <div class="chrome-top"></div>
+  <header class="header">
+    <div class="top-kicker">★ Serving History Since 1946 ★</div>
+    <h1 class="brand">THE ATOMIC <em>DINER</em></h1>
+    <div class="brand-sub">COLD WAR CONNECT FOUR · 1946–1963</div>
+  </header>
+  <div class="marquee"><span>✦ HOT QUESTIONS ✦ COOL SHAKES ✦ FOUR IN A ROW ✦ 1950s U.S. HISTORY ✦</span></div>
+
+  <main>
+    <section id="setupScreen" class="card setup-card" aria-label="Game setup">
+      <div class="mini-overline">Your booth is ready</div>
+      <h2 class="section-head">Welcome to the History Showdown!</h2>
+      <p class="setup-desc">Two players. One Connect Four board. Answer a question correctly to earn your disc. First to connect <strong>four in a row</strong>—across, up and down, or diagonally—wins the round.</p>
+      <div class="setup-grid">
+        <div>
+          <div class="mini-overline">01 / Pick your players</div>
+          <label for="name1" class="name-label"><span class="swatch" style="background:#ef6868"></span> Player 1 · Cherry Red</label>
+          <input id="name1" class="name-input" type="text" value="Player 1" maxlength="18" autocomplete="off">
+          <label for="name2" class="name-label"><span class="swatch" style="background:#35bdb7"></span> Player 2 · Mint Teal</label>
+          <input id="name2" class="name-input" type="text" value="Player 2" maxlength="18" autocomplete="off">
+          <div class="rules-box" style="margin-top:20px">
+            <p><strong>How the jukebox works</strong></p>
+            <p>Every 5th question is a 1950s pop-culture bonus. Get it right and choose a <strong>Double Dip</strong> (two discs now) or a <strong>Do-Over Token</strong> (retry a missed history question later).</p>
+            <p>Miss a question? Your turn ends—unless you use a saved Do-Over Token.</p>
+          </div>
+        </div>
+        <div>
+          <div class="mini-overline">02 / Set the menu</div>
+          <p class="setup-desc" style="margin:8px 0 10px">Choose the unit topics to include. History questions are weighted toward society and the Early Cold War.</p>
+          <div class="topic-stack" id="topicChecklist">
+            <label class="check-row"><input type="checkbox" value="society" checked><span>1950s Society &amp; Economy</span><small id="count-society"></small></label>
+            <label class="check-row"><input type="checkbox" value="early" checked><span>Early Cold War</span><small id="count-early"></small></label>
+            <label class="check-row"><input type="checkbox" value="red" checked><span>Second Red Scare</span><small id="count-red"></small></label>
+            <label class="check-row"><input type="checkbox" value="hotspots" checked><span>Cold War Hot Spots</span><small id="count-hotspots"></small></label>
+            <label class="check-row"><input type="checkbox" value="nuclear" checked><span>Nuclear &amp; Space Race</span><small id="count-nuclear"></small></label>
+            <label class="check-row bonus"><input id="jukeboxToggle" type="checkbox" checked><span>Jukebox bonus rounds</span><small>Every 5th</small></label>
+          </div>
+        </div>
+      </div>
+      <div id="setupError" role="alert" class="setup-error" aria-live="polite"></div>
+      <button id="startBtn" class="diner-btn teal start-btn" type="button">▶ Pull Up a Booth — Start Game</button>
+    </section>
+
+    <section id="gameScreen" class="hidden" aria-label="Connect Four history review game">
+      <div class="game-top">
+        <div id="playerHud0" class="player-hud">
+          <div class="avatar p0" aria-hidden="true">★</div>
+          <div class="player-data"><span id="playerName0" class="player-name">Player 1</span><div id="playerMeta0" class="player-meta">0 wins · 0/0 correct</div></div>
+        </div>
+        <div class="vs-disc">VS</div>
+        <div id="playerHud1" class="player-hud right">
+          <div class="avatar p1" aria-hidden="true">★</div>
+          <div class="player-data"><span id="playerName1" class="player-name">Player 2</span><div id="playerMeta1" class="player-meta">0 wins · 0/0 correct</div></div>
+        </div>
+      </div>
+      <div class="game-viewport">
+        <section class="card question-card" aria-label="Trivia question">
+          <div id="questionArea" aria-live="polite"></div>
+        </section>
+        <section class="card board-card" aria-label="Connect Four board">
+          <div class="board-heading">
+            <div class="mini-overline">The house special</div>
+            <h2 class="board-title">CONNECT FOUR</h2>
+            <div id="boardSubtitle" class="board-subtitle">Answer a question to unlock your next move.</div>
+          </div>
+          <div class="board-area">
+            <div id="dropRow" class="drop-row" aria-label="Drop disc in column"></div>
+            <div id="connectBoard" class="connect-board" role="grid" aria-label="Six rows, seven columns"></div>
+            <div id="boardStatus" class="board-status" aria-live="polite">Connect four to win!</div>
+          </div>
+          <div class="board-legend">
+            <span><i class="legend-dot" style="background:#e95b65"></i> Cherry Red</span>
+            <span><i class="legend-dot" style="background:#2dbdb7"></i> Mint Teal</span>
+          </div>
+        </section>
+      </div>
+      <div class="lower-strip">
+        <span id="roundInfo">Round 1 · Diner History Challenge</span>
+        <div class="tiny-controls">
+          <button id="helpBtn" class="tiny-btn" type="button">? How to Play</button>
+          <button id="soundBtn" class="tiny-btn" type="button" aria-pressed="true">♪ SFX ON</button>
+          <button id="restartBtn" class="tiny-btn" type="button">↻ New Match</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="checker" aria-hidden="true"></div>
+</div>
+
+<div id="endCover" class="end-cover hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+  <div class="end-modal">
+    <div id="endIcon" class="end-icon">🏆</div>
+    <div class="mini-overline">Tonight's diner champion</div>
+    <h2 id="endTitle" class="end-title">Four in a Row!</h2>
+    <p id="endText" class="end-text"></p>
+    <div class="end-actions">
+      <button id="againBtn" class="diner-btn teal" type="button">Play Another Round</button>
+      <button id="backSetupBtn" class="diner-btn white" type="button">New Match / Settings</button>
+    </div>
+  </div>
+</div>
+<div id="helpCover" class="end-cover hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="end-modal" style="max-width:510px">
+    <div class="mini-overline">Diner House Rules</div><h2 id="helpTitle" class="end-title" style="font-size:32px">How to Play</h2>
+    <div class="help-body"><ul>
+      <li>Players take turns answering one multiple-choice question.</li>
+      <li><strong>Correct:</strong> click a column (or press 1–7) to drop your disc. First to four in a row wins.</li>
+      <li><strong>Incorrect:</strong> the other player goes next. The correct answer and a brief explanation appear after each guess.</li>
+      <li>With Jukebox enabled, every fifth question is 1950s pop culture. Answer correctly to choose <strong>Double Dip</strong> (two discs this turn) or a saved <strong>Do-Over Token</strong>.</li>
+      <li>A Do-Over Token lets you take a fresh history question after one wrong answer without losing your turn.</li>
+      <li>Keyboard: <strong>1–4</strong> answer questions; <strong>1–7</strong> choose a column once a disc is unlocked.</li>
+    </ul></div>
+    <button id="closeHelpBtn" class="diner-btn teal" type="button">Back to Game</button>
+  </div>
+</div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+// ======================================================================
+// TEACHER NOTE: Everything works offline. To edit a question, change a
+// line below. add(category, question, [four answers], correctIndex, why)
+// correctIndex: 0=A, 1=B, 2=C, 3=D. Answer positions shuffle in play.
+// Category codes: society, early, red, hotspots, nuclear, pop.
+// ======================================================================
+const BANK=[];
+function add(t,q,a,c,why){BANK.push({t,q,a,c,why});}
+
+// 1950s society, economy, and culture
+add('society','What helped the American middle class grow after World War II?', ['Rising wages and expanding job opportunities','A sharp decline in consumer purchases','The closing of large American factories','A long national drop in housing demand'],0,'Postwar production, jobs, and rising wages helped more families join the middle class.');
+add('society','How did the G.I. Bill help many returning veterans?', ['It guaranteed equal pay in every industry','It offered education and home-loan benefits','It required veterans to join a labor union','It provided free automobiles to veterans'],1,'Education benefits and housing assistance helped many veterans pursue college and homeownership.');
+add('society','What was the baby boom?', ['The increase in births after World War II','The sudden growth of U.S. manufacturing','The expansion of the national highway network','The rise of teenagers as music consumers'],0,'The baby boom was a large rise in births after the war.');
+add('society','What made Levittown developments significant?', ['They replaced suburbs with apartment towers','They created large numbers of affordable suburban homes','They introduced the first national highway system','They ended racial discrimination in homeownership'],1,'Mass-produced houses lowered costs, but many developments excluded Black buyers.');
+add('society','What does the term “white flight” describe?', ['White residents moving from cities to suburbs','White families moving from suburbs to farms','Workers moving overseas for industrial jobs','Veterans moving from suburbs into cities'],0,'White flight refers to the movement of many white residents from urban areas to suburbs.');
+add('society','Which development helped suburbs grow during the 1950s?', ['Fewer highways connecting homes and work','Less access to mortgage loans for veterans','More automobile ownership and easier commuting','A national decline in construction of new homes'],2,'Cars, highways, and mortgages made suburban living more practical for many families.');
+add('society','What was a major effect of the Interstate Highway Act of 1956?', ['It encouraged car travel and roadside businesses','It banned the construction of suburban homes','It caused families to stop purchasing automobiles','It replaced all privately owned roads with railways'],0,'The interstate system supported travel, commuting, trucking, and businesses near highways.');
+add('society','Why did fast-food restaurants expand with automobile culture?', ['More drivers wanted convenient roadside meals','All suburban families stopped cooking at home','The government required dining along highways','More teenagers stopped spending money on food'],0,'Car travel and suburban development created demand for convenient roadside services.');
+add('society','What is consumerism?', ['An emphasis on buying goods and services','A national policy of reducing personal spending','A system of government-owned factories','A movement to close advertising businesses'],0,'Consumerism emphasizes the purchase of goods and services.');
+add('society','Why did television advertising increase consumer spending?', ['It promoted products to large national audiences','It forced families to stop using installment plans','It prevented companies from promoting new products','It encouraged viewers to avoid household appliances'],0,'Television allowed advertisers to reach millions of viewers with products and lifestyle ideals.');
+add('society','How did consumer credit help the 1950s economy?', ['It allowed customers to pay for purchases over time','It ended the need for families to have bank accounts','It required most Americans to avoid new purchases','It prevented retailers from selling household items'],0,'Installment payments and credit helped families afford large purchases.');
+add('society','Why did the baby boom increase demand for products?', ['Growing families needed housing, food, and supplies','Parents stopped purchasing goods for children','The population declined in many suburban regions','Factories produced fewer goods for family households'],0,'More children and growing families increased demand for homes, food, clothing, and appliances.');
+add('society','How did television contribute to conformity?', ['It spread similar images of families and success','It eliminated all advertising from American homes','It encouraged every region to adopt a separate culture','It made home entertainment unavailable to families'],0,'Popular programs and commercials promoted shared expectations about family life and success.');
+add('society','What does conformity mean in 1950s American culture?', ['The pressure to fit in with social expectations','A plan to replace suburbs with urban apartments','A policy of ending military alliances overseas','The belief that all Americans should join politics'],0,'Conformity is the pressure to behave in ways society considers normal or acceptable.');
+add('society','Which example best reflects traditional 1950s gender expectations?', ['A father as breadwinner and mother as homemaker','A family required to send all children to college','A workplace where all adults earned equal salaries','A national law that required every parent to work'],0,'The idealized nuclear family often portrayed men as wage earners and women as homemakers.');
+add('society','Why did some women feel frustrated with 1950s gender expectations?', ['They wanted more freedom to pursue careers or goals','They were required to buy new houses every year','They were banned from owning household appliances','They had to serve in the military after marriage'],0,'Some women felt limited by pressure to prioritize homemaking over other ambitions.');
+add('society','Why did teenagers become a distinct consumer group in the 1950s?', ['More teens had spending money and entertainment choices','Most teens were legally barred from listening to music','Schools required teenagers to leave before graduation','American companies stopped making products for adults'],0,'Prosperity, jobs, and youth-focused media helped create a separate teen market.');
+add('society','What helped spread rock ’n’ roll among American teenagers?', ['Records, radio, and television performances','A national ban on live musical performances','The end of radio broadcasting in major cities','The disappearance of teenage spending money'],0,'Records, radio, television, and performances made rock music widely accessible.');
+add('society','Why did some adults criticize rock ’n’ roll?', ['It challenged racial boundaries and social expectations','It prevented teenagers from attending movie theaters','It removed rhythm and dancing from popular music','It was promoted only through government classrooms'],0,'Rock music mixed Black and white musical influences and challenged expectations about young people.');
+add('society','What was one limit of 1950s economic prosperity?', ['Racial discrimination restricted some families’ opportunities','All families received equal access to suburban housing','The federal government ended poverty by 1952','Factory employment disappeared across the country'],0,'Prosperity was not evenly shared; racial discrimination and poverty remained serious problems.');
+add('society','What contradiction existed in many postwar suburbs?', ['Affordable homes expanded while some racial groups were excluded','Housing prices rose while all families received free mortgages','Suburbs became popular while automobile ownership collapsed','New schools opened while families stopped having children'],0,'Some subdivisions offered affordable homes but used exclusionary rules that discriminated against Black families.');
+add('society','Which factor explains how the G.I. Bill helped the economy grow?', ['Veterans bought homes and attended college, creating demand','Veterans were forbidden from working after leaving the service','The government ended all federal support for higher education','Americans stopped purchasing homes after World War II'],0,'Education and home purchases stimulated jobs, construction, and further spending.');
+add('society','Which connection best explains the growth of suburban shopping centers?', ['Suburban families and automobiles created new customers','The decline of suburbs increased downtown shopping','Factory closures caused families to abandon cars','Television eliminated the need for retail businesses'],0,'As families and roads moved outward, businesses followed suburban shoppers.');
+add('society','What was one major effect of the rise of television?', ['Americans watched shared programs across the nation','Families no longer encountered product advertising','Regional entertainment became impossible to distribute','Most Americans stopped buying consumer products'],0,'Television created shared national entertainment and common cultural references.');
+add('society','What made the idealized “perfect family” image incomplete?', ['It ignored many inequalities and family experiences','It showed that every American lived in a suburb','It proved no women worked outside the household','It described all American families equally well'],0,'The idealized suburban nuclear family did not represent every household or equal opportunity.');
+add('society','How were teenage culture and consumerism connected?', ['Businesses sold records, clothes, and entertainment to teens','Teenagers were required to spend only on school supplies','Teenagers avoided popular music and fashion trends','Advertisers stopped designing products for young people'],0,'Companies increasingly marketed music, fashion, and entertainment to teenagers.');
+
+// Early Cold War
+add('early','What made the United States and Soviet Union distrust each other after WWII?', ['They disagreed about political systems and Europe’s future','They had fought on opposite sides throughout WWII','They both wanted to abandon their alliances in Europe','They agreed that Eastern Europe should be neutral'],0,'Their competing systems and different goals for postwar Europe fueled distrust.');
+add('early','How did American capitalism differ from the Soviet economic system?', ['Private businesses played a larger role in the U.S.','The U.S. government owned every major business','Soviet consumers elected company leaders directly','Both countries banned private buying and selling'],0,'The U.S. emphasized private enterprise, while the Soviet economy was centrally planned.');
+add('early','What did Soviet leaders seek in Eastern Europe after WWII?', ['Friendly governments creating a security buffer','A group of independent American military bases','New markets controlled by Western corporations','Direct rule by the restored German monarchy'],0,'Stalin wanted governments friendly to the USSR between Soviet territory and potential Western enemies.');
+add('early','What promise made at Yalta became a major source of tension?', ['Free elections in liberated European countries','The immediate removal of all Allied troops from Germany','The creation of a single government for all Europe','The permanent end of Soviet influence in Poland'],0,'Soviet-backed communist control of Eastern Europe contradicted promises about free elections.');
+add('early','What did Winston Churchill mean by the “Iron Curtain”?', ['Europe was divided between Soviet influence and the West','Germany had built a wall around every occupied zone','Trade barriers prevented all Europeans from traveling','The Soviet Union had ended its influence in Europe'],0,'The phrase described the political divide between Soviet-controlled Eastern Europe and the West.');
+add('early','What was George Kennan’s central warning in the Long Telegram?', ['Soviet leaders would seek to expand their influence','The USSR was preparing to immediately surrender','Germany would reunify without foreign involvement','The United States should abandon Western Europe'],0,'Kennan argued that Soviet behavior required a firm, long-term response.');
+add('early','What did containment seek to prevent?', ['Further expansion of communist influence','All trade between communist and capitalist nations','The rebuilding of Japan and Western Europe','American involvement in international alliances'],0,'Containment aimed to stop communism from spreading into additional countries.');
+add('early','What did the Truman Doctrine promise?', ['Support to countries resisting communist pressure','Military rule over all European allied governments','Trade restrictions against every European nation','American control of all elections in Western Europe'],0,'Truman pledged aid to nations threatened by communist influence, notably Greece and Turkey.');
+add('early','Why did Greece and Turkey become important to Truman?', ['American leaders feared communist expansion in the region','Both countries had become Soviet satellite states','Both had requested membership in the Warsaw Pact','U.S. leaders planned to divide them into zones'],0,'American aid to Greece and Turkey was an early test of containment.');
+add('early','How did the Marshall Plan aim to resist communism?', ['By rebuilding economies that might otherwise turn radical','By forcing Eastern European states to join NATO','By sending American ground troops to every European city','By placing Western industry under Soviet management'],0,'Economic stability was expected to reduce communist parties’ appeal in Western Europe.');
+add('early','What caused the Berlin Blockade?', ['Soviet authorities blocked Western land routes to Berlin','American troops attacked the Soviet occupation zone','West Berlin refused all assistance from Western allies','Germany voted to become a Soviet satellite state'],0,'The Soviets cut land access to West Berlin in 1948 amid growing tensions.');
+add('early','Why did the West respond with the Berlin Airlift?', ['To supply West Berlin without fighting Soviet troops','To move West Berlin’s population out of Germany','To force East Berlin to join the Marshall Plan','To launch a ground invasion of the Soviet zone'],0,'Western planes brought supplies while avoiding a direct armed clash.');
+add('early','What did the Berlin Airlift demonstrate?', ['The West would resist Soviet pressure without direct war','The United States planned to withdraw from Germany','The Soviet Union had ended control over East Berlin','Air transportation was banned during the Cold War'],0,'The airlift showed resolve while avoiding a military confrontation.');
+add('early','What was NATO’s central purpose?', ['Collective defense among Western allies','Joint management of all European elections','A Soviet-led agreement to divide Germany','An end to all American troops outside the U.S.'],0,'NATO members agreed that an attack on one could be treated as an attack on all.');
+add('early','Why did the communist victory in China in 1949 alarm Americans?', ['It seemed to show communism gaining ground in Asia','It meant the United Nations would immediately dissolve','It placed Chinese cities under American occupation','It ended U.S. involvement in the Pacific region'],0,'Mao’s victory raised fears that communist influence was spreading.');
+add('early','What event began the Korean War in 1950?', ['North Korean forces invaded South Korea','South Korean troops invaded the Soviet Union','The Soviet Union attacked American troops in Japan','China occupied the United Nations headquarters'],0,'North Korea crossed the 38th parallel and invaded the South in June 1950.');
+add('early','Why did U.S. forces fight in Korea?', ['To resist invasion and contain communist expansion','To make Korea an American colony after WWII','To prevent the rebuilding of Japan’s economy','To remove European countries from the United Nations'],0,'The U.S. led UN forces defending South Korea and applying containment.');
+add('early','What changed the Korean War after UN forces moved north?', ['China entered the conflict and pushed them back','The Soviet Union formally joined NATO','Japan sent troops to conquer both Korean states','North Korea surrendered and the war ended at once'],0,'Chinese forces intervened as UN troops approached China’s border.');
+add('early','How did the Korean War end in 1953?', ['An armistice left Korea divided near its original border','A peace treaty unified Korea under South Korea','The United States annexed northern Korean territory','The UN placed Korea directly under Soviet rule'],0,'An armistice ended major fighting, but Korea remained divided and no peace treaty was signed.');
+add('early','What is the Domino Theory?', ['A belief that one communist victory could encourage others nearby','A plan to build military bases in every country','A theory that communism would disappear without resistance','A policy requiring every Asian nation to join NATO'],0,'U.S. leaders feared neighboring countries might also turn communist if one fell.');
+add('early','What was the main difference between the Truman Doctrine and Marshall Plan?', ['Truman Doctrine promised aid against threats; Marshall Plan rebuilt economies','Truman Doctrine rebuilt the Soviet economy; Marshall Plan fought in Korea','Truman Doctrine created NATO; Marshall Plan divided Germany into zones','Truman Doctrine only helped Japan; Marshall Plan only helped Latin America'],0,'Both supported containment but emphasized different tools: assistance against threats and economic recovery.');
+add('early','Why did U.S. leaders prefer an airlift to attacking Soviet checkpoints?', ['An airlift could help Berlin without starting a direct war','Airlift planes could secretly occupy the Soviet Union','Air routes forced East Germany to hold elections','The Soviets had already withdrawn all troops from Berlin'],0,'Avoiding a direct clash reduced the risk of a wider U.S.–Soviet war.');
+add('early','What did the term “satellite state” mean in the Cold War?', ['A country whose government was strongly controlled by the Soviet Union','A European country that launched an artificial satellite','A nation that avoided all foreign military alliances','A country administered directly by the United Nations'],0,'Soviet satellite states had governments closely aligned with and dependent on Moscow.');
+add('early','What was one long-term result of containment?', ['The U.S. maintained alliances and entered conflicts overseas','The U.S. ended foreign aid after the Berlin Airlift','Every communist government was removed by 1953','Congress prohibited presidents from making alliances'],0,'Containment shaped decades of U.S. global commitments and interventions.');
+
+// Second Red Scare
+add('red','What drove the Second Red Scare in the U.S.?', ['Fear of Soviet spies and communist influence at home','A belief that communism had vanished from Europe','Widespread support for joining the Soviet government','A plan to replace television with radio entertainment'],0,'Espionage concerns and Cold War rivalry fueled suspicion about communist influence inside the U.S.');
+add('red','What was HUAC?', ['A House committee investigating suspected communist influence','A military alliance formed to protect Western Europe','A Soviet agency building nuclear weapons overseas','A committee that organized the Marshall Plan'],0,'The House Un-American Activities Committee investigated alleged subversive influence.');
+add('red','Who were the Hollywood Ten?', ['Film industry figures cited for contempt after refusing to cooperate with HUAC','Ten senators who joined McCarthy’s investigations','Ten Soviet agents captured during the Korean War','A committee investigating the American economy'],0,'The Hollywood Ten refused to answer HUAC questions and were cited for contempt of Congress.');
+add('red','What did blacklisting mean during the Red Scare?', ['People lost employment because of suspected political connections','Businesses stopped hiring workers under the age of 21','The federal government banned all foreign-made films','Employees were allowed to work without government scrutiny'],0,'Blacklists shut some accused individuals out of jobs, especially in entertainment.');
+add('red','Why was the Alger Hiss case important?', ['It increased fears that communist spies had entered government','It led to the creation of the first television network','It ended congressional investigations of suspected spying','It proved that all Cold War accusations were invented'],0,'Hiss was convicted of perjury in a Soviet espionage-related investigation, heightening suspicion.');
+add('red','What were Julius and Ethel Rosenberg convicted of?', ['Conspiracy to commit espionage for the Soviet Union','Planning the Soviet blockade of West Berlin','Leading an armed revolt in Eastern Europe','Refusing to sign a television industry contract'],0,'They were convicted of conspiracy to commit espionage; their case became a major Red Scare symbol.');
+add('red','What behavior gave rise to the term “McCarthyism”?', ['Making dramatic communist accusations with weak support','Providing aid to European countries rebuilding after WWII','Organizing teenage boycotts of rock music','Supporting negotiations during the Berlin Airlift'],0,'Senator McCarthy became known for allegations that often lacked sufficient evidence.');
+add('red','Why were loyalty oaths controversial?', ['Employees could face suspicion because of political beliefs','They allowed government workers to refuse security checks','They required every voter to join the Communist Party','They guaranteed no innocent person could be investigated'],0,'Loyalty programs could threaten jobs and civil liberties, sometimes using association or suspicion.');
+add('red','How could the Red Scare encourage conformity?', ['People avoided unpopular opinions to escape suspicion','Americans were required to stop watching television','Schools ended teaching U.S. history and government','Families abandoned suburbs for isolated settlements'],0,'Fear of being labeled disloyal encouraged silence and conformity.');
+add('red','Which example best shows a civil liberties concern?', ['An accused worker loses a job without a fair chance to respond','A family buys a new TV using monthly installment payments','A soldier uses G.I. Bill benefits to attend college','A high school student listens to a new rock record'],0,'Accusations and employment penalties without adequate fairness raised due-process concerns.');
+add('red','How were McCarthy and HUAC different?', ['McCarthy was a senator; HUAC was a House committee','McCarthy worked for the USSR; HUAC worked for NATO','McCarthy investigated rock music; HUAC banned television','McCarthy led the FBI; HUAC led the U.S. military'],0,'McCarthy was a U.S. senator; HUAC was a separate House investigative committee.');
+add('red','Which claim best evaluates the Red Scare?', ['Real espionage occurred, but some investigations went too far','All communist accusations were false and espionage never happened','Every person investigated was convicted of spying','Civil liberties grew stronger because of every investigation'],0,'Both real Soviet espionage and unjustified accusations must be recognized.');
+add('red','Why did the Hollywood blacklist matter?', ['Suspected political beliefs could end careers without criminal convictions','It guaranteed film workers lifetime government employment','It forced every film to promote the Marshall Plan','It ended the production of American movies in 1950'],0,'The blacklist imposed serious professional penalties outside criminal trials.');
+add('red','What was one consequence of intense anticommunist suspicion?', ['Some Americans feared speaking freely or associating with others','Congress stopped all investigations of federal employees','American movies abandoned every national political topic','The Soviet Union joined NATO and ended espionage'],0,'Fear of guilt by association could limit expression and social relationships.');
+
+// Cold War hotspots and interventions
+add('hotspots','Why did the U.S. become involved in Iran in 1953?', ['Leaders feared Soviet influence and wanted to protect Western oil interests','The U.S. wanted Iran to join the Warsaw Pact','Iran had invaded American military bases in Korea','Iran planned to send troops to support West Berlin'],0,'Oil interests and fears about communism helped motivate the CIA-backed coup.');
+add('hotspots','What was a major U.S. action in Iran in 1953?', ['The CIA helped overthrow Prime Minister Mosaddegh','American troops occupied Tehran for twenty years','The U.S. armed Soviet forces to support Mosaddegh','NATO appointed a new Iranian parliament directly'],0,'The CIA, working with British intelligence and Iranians, supported a coup that removed Mosaddegh and strengthened the Shah.');
+add('hotspots','Why did the U.S. oppose President Árbenz’s government in Guatemala?', ['Land reform affected U.S. business interests amid fears of communism','Guatemala had attacked U.S. territory with nuclear missiles','Árbenz requested American troops to fight the USSR','Guatemala refused to recognize the Korean armistice'],0,'Land reform involving United Fruit Company holdings and anticommunist fears shaped U.S. policy.');
+add('hotspots','What role did the CIA play in Guatemala in 1954?', ['It supported forces that helped overthrow President Árbenz','It negotiated an agreement to divide Guatemala in half','It provided soldiers to defend Árbenz from rebel forces','It arranged elections supervised by the Soviet Union'],0,'Operation PBSUCCESS helped force Árbenz from power through rebel support and psychological operations.');
+add('hotspots','What happened in Vietnam in 1954?', ['France was defeated and Vietnam was temporarily divided','The United States withdrew all military support from Asia','Vietnam became a unified democracy through national voting','The Soviet Union invaded South Vietnam with ground forces'],0,'France lost at Dien Bien Phu and Vietnam was temporarily divided under the Geneva arrangements.');
+add('hotspots','How did the U.S. initially support anti-communist South Vietnam?', ['By providing financial aid, military advisers, and political support','By invading North Vietnam with nuclear weapons in 1954','By immediately recognizing Ho Chi Minh as president of all Vietnam','By transferring South Vietnam to French colonial control'],0,'The United States supported South Vietnam with advisers, aid, and diplomatic backing.');
+add('hotspots','What happened during the Hungarian uprising of 1956?', ['Soviet forces crushed a revolt against Soviet domination','American troops defeated the Soviet army in Budapest','Hungary peacefully joined NATO after a free election','The Soviet Union withdrew completely before fighting began'],0,'Soviet troops suppressed the revolution and maintained control.');
+add('hotspots','Why did the U.S. avoid sending troops to Hungary in 1956?', ['It feared a direct war with the Soviet Union','It supported Soviet control over all of Europe','It had already joined Hungary in the Warsaw Pact','It believed Hungary was outside Europe entirely'],0,'Military intervention risked escalating into a U.S.–Soviet confrontation.');
+add('hotspots','Who came to power in Cuba after the 1959 revolution?', ['Fidel Castro','Fulgencio Batista','Nikita Khrushchev','Jacobo Árbenz'],0,'Fidel Castro and his revolutionary forces overthrew Batista’s dictatorship.');
+add('hotspots','What happened at the Bay of Pigs in 1961?', ['CIA-trained Cuban exiles attempted an invasion that failed','Regular American ground troops occupied Havana permanently','The Soviet Union removed nuclear missiles from Cuba','Cuban rebels overthrew Castro and held new elections'],0,'The U.S.-backed invasion by Cuban exiles failed to remove Castro.');
+add('hotspots','Why did the Bay of Pigs failure embarrass Kennedy?', ['The U.S.-supported attempt to overthrow Castro had failed','The U.S. military had surrendered its Florida bases','The Soviet Union had become an American military ally','Castro had been elected president of the United States'],0,'The failed covert operation damaged Kennedy’s reputation and strengthened Castro’s position.');
+add('hotspots','What is covert intervention?', ['Secretly influencing events or governments in another country','Sending aid openly through the United Nations','Refusing to take any action beyond issuing statements','Holding a formal public vote before every foreign policy choice'],0,'Covert interventions use concealed assistance or actions to influence events abroad.');
+add('hotspots','What do Iran and Guatemala reveal about Cold War policy?', ['The U.S. sometimes supported coups to limit perceived communist influence','The U.S. always allowed democratic elections without interference','The Soviet Union carried out both coups with American approval','The United Nations required the U.S. to invade both countries'],0,'Both cases involved CIA support for regime change justified partly by anticommunism.');
+add('hotspots','What do Hungary and Guatemala reveal about containment?', ['American responses differed according to risks and strategic circumstances','American troops invaded every country where communism appeared','The U.S. ignored all Cold War events outside North America','Containment required the same military response in every country'],0,'U.S. leaders accepted different risks in different regions, intervening covertly in one case and avoiding direct war in another.');
+add('hotspots','What is one potential cost of supporting a foreign coup?', ['It can create resentment or political instability for years','It guarantees long-term democracy in the target country','It eliminates every danger of foreign involvement','It prevents other nations from resenting the United States'],0,'Regime changes could provoke backlash and instability despite short-term American goals.');
+
+// Nuclear fear, crisis and space race
+add('nuclear','Why did Cold War nuclear weapons increase fear?', ['A superpower war could destroy entire cities very quickly','Nuclear weapons made conventional conflicts impossible','The USSR had no way to build atomic weapons','Only American military bases could be damaged by bombs'],0,'The destructive power of nuclear weapons raised the stakes of confrontation.');
+add('nuclear','What were Americans trying to prepare for with fallout shelters?', ['Radioactive fallout after a nuclear explosion','A military invasion by British forces','A long closure of American highways','The cancellation of radio broadcasts'],0,'Shelters were intended to reduce exposure to radioactive fallout.');
+add('nuclear','What was the purpose of “Duck and Cover” drills?', ['To teach basic civil defense reactions during a possible nuclear attack','To train students for military service in foreign countries','To encourage teenagers to participate in space exploration','To replace fire drills with weather prediction lessons'],0,'Civil defense drills aimed to teach protective reactions, though they offered limited protection from a major blast.');
+add('nuclear','Why did the launch of Sputnik alarm many Americans?', ['Soviet rocket advances suggested potential missile capabilities','The Soviet satellite had already destroyed an American city','Sputnik allowed the Soviet Union to control all television','The launch ended the American space program permanently'],0,'Rocket technology used to launch satellites could also help deliver long-range missiles.');
+add('nuclear','What was the Space Race?', ['Competition between the U.S. and USSR in space technology','A competition to build highways across North America','An agreement to end all research into rocket technology','A Soviet plan to place every European nation in orbit'],0,'Both superpowers used space achievements to demonstrate scientific and technological strength.');
+add('nuclear','What does brinkmanship describe?', ['Pushing a crisis near war to pressure an opponent','Avoiding disagreement by refusing diplomatic contact','Allowing the United Nations to control both militaries','Ending military alliances during international crises'],0,'Brinkmanship involves raising the stakes of confrontation to gain leverage.');
+add('nuclear','What did U.S. photographs reveal in Cuba in October 1962?', ['Soviet sites for nuclear-capable missiles under construction','American troops preparing to occupy the Soviet Union','The immediate withdrawal of Castro’s government','A completed Cuban invasion of southern Florida'],0,'U-2 reconnaissance discovered Soviet missile installations under construction.');
+add('nuclear','How did Kennedy respond to missiles in Cuba?', ['He ordered a naval quarantine and demanded their removal','He ordered an immediate nuclear strike on Moscow','He surrendered the American naval base at Guantánamo','He immediately sent U.S. ground forces to occupy Havana'],0,'Kennedy announced a naval quarantine while pursuing negotiations.');
+add('nuclear','How did the Cuban Missile Crisis end?', ['The USSR removed the missiles after diplomatic agreements','The United States launched a successful invasion of Cuba','Cuba became an American state after a United Nations vote','Both sides agreed to permanently abandon nuclear weapons'],0,'Khrushchev agreed to remove the missiles; the U.S. pledged not to invade Cuba and secretly agreed to remove Jupiter missiles from Turkey.');
+add('nuclear','Why was the Cuban Missile Crisis especially dangerous?', ['A nuclear clash between the U.S. and USSR seemed possible','The United States and Soviet Union had no nuclear weapons','Castro had already invaded the continental United States','Both sides had agreed that military action was impossible'],0,'The crisis risked rapid escalation into nuclear war.');
+
+// Jukebox bonuses: 1950s culture and familiar classroom connections
+add('pop','Which musician was famously nicknamed the “King of Rock ’n’ Roll”?', ['Elvis Presley','Frank Sinatra','Duke Ellington','Johnny Cash'],0,'Elvis Presley was widely known as the King of Rock ’n’ Roll.');
+add('pop','What was a typical attraction at a 1950s drive-in theater?', ['Watching movies from inside a parked car','Listening to television through a home radio','Purchasing books for a school assignment','Attending an indoor classical concert'],0,'Drive-ins combined growing automobile culture with movie entertainment.');
+add('pop','Which 1950s television comedy featured Lucy and Ricky Ricardo?', ['I Love Lucy','The Twilight Zone','American Bandstand','The Honeymooners'],0,'I Love Lucy became one of the era’s most famous television comedies.');
+add('pop','Which fashion item became a major craze in 1958?', ['Hula Hoop','Rollerblades','Digital wristwatch','Portable CD player'],0,'The Hula Hoop was a national fad in 1958.');
+add('pop','Which entertainment show became known for televised teen dancing?', ['American Bandstand','Meet the Press','The Ed Sullivan Show','The $64,000 Question'],0,'American Bandstand helped popularize youth music and dance trends.');
+add('pop','What was a common way teenagers listened to records in the 1950s?', ['Playing vinyl singles on a record player','Streaming music through a smartphone','Downloading songs to a portable MP3 player','Using compact discs in a car stereo'],0,'Vinyl singles and record players were major parts of 1950s music culture.');
+add('pop','What food was commonly associated with a classic 1950s diner?', ['Milkshakes and hamburgers','Sushi rolls and bubble tea','Frozen yogurt and energy drinks','Avocado toast and espresso shots'],0,'Milkshakes, burgers, and jukeboxes became familiar diner imagery.');
+add('pop','What did many diners use to let customers select songs?', ['A jukebox','A satellite radio','An MP3 player','A television remote'],0,'Jukeboxes allowed customers to select records for a small payment.');
+add('pop','Which 1950s movie helped popularize teenage rebellion as a theme?', ['Rebel Without a Cause','The Godfather','Jaws','Star Wars'],0,'Rebel Without a Cause (1955) became an enduring symbol of teen conflict and identity.');
+add('pop','Which musician recorded the early rock hit “Johnny B. Goode”?', ['Chuck Berry','Bing Crosby','Nat King Cole','Perry Como'],0,'Chuck Berry’s 1958 hit became a rock-and-roll landmark.');
+add('pop','Which family entertainment destination opened in California in 1955?', ['Disneyland','Epcot','Universal Orlando','Disney California Adventure'],0,'Disneyland opened in Anaheim in 1955.');
+add('pop','Which fashion doll was introduced in 1959?', ['Barbie','American Girl','Bratz','Cabbage Patch Kids'],0,'Mattel introduced Barbie in 1959.');
+add('pop','What was a common feature of 1950s drive-in restaurants?', ['Carhop servers bringing food to parked cars','App-only ordering and smartphone pickup codes','Indoor mall food courts with electronic kiosks','Online delivery with no in-person service'],0,'Drive-in restaurants catered to car owners and often used carhop service.');
+add('pop','What did a 45 rpm record usually contain?', ['A short song or single on each side','A full-length movie on each side','A television program stored as video','An entire album in digital files'],0,'Small 45 rpm vinyl records were an important format for singles.');
+add('pop','Which television program became famous for suspenseful, strange stories in 1959?', ['The Twilight Zone','Sesame Street','Happy Days','Saturday Night Live'],0,'The Twilight Zone premiered in 1959 and featured science-fiction and suspense stories.');
+add('pop','Which singer became famous for energetic early rock performances and “Tutti Frutti”?', ['Little Richard','Dean Martin','Perry Como','Burl Ives'],0,'Little Richard helped shape the sound and style of early rock-and-roll.');
+
+const TOPICS={society:{label:'Society & Economy',weight:34},early:{label:'Early Cold War',weight:30},red:{label:'Red Scare',weight:15},hotspots:{label:'Cold War Hot Spots',weight:13},nuclear:{label:'Nuclear & Space Race',weight:8},pop:{label:'Jukebox Bonus',weight:0}};
+const COLS=7,ROWS=6;
+const $=id=>document.getElementById(id);
+const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S=null;
+let sfxOn=true, audioContext=null, toastHandle=null;
+
+function sound(kind){
+  if(!sfxOn)return;
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)return;
+    if(!audioContext)audioContext=new Ctx();
+    if(audioContext.state==='suspended')audioContext.resume();
+    const notes=kind==='win'?[523,659,784,1046]:kind==='good'?[440,659]:kind==='bad'?[230,180]:kind==='drop'?[295]:[400];
+    notes.forEach((freq,i)=>{
+      const osc=audioContext.createOscillator(),gain=audioContext.createGain(),t=audioContext.currentTime+i*.085;
+      osc.type=kind==='bad'?'triangle':'sine';osc.frequency.setValueAtTime(freq,t);
+      gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.075,t+.015);gain.gain.exponentialRampToValueAtTime(.0001,t+.17);
+      osc.connect(gain);gain.connect(audioContext.destination);osc.start(t);osc.stop(t+.18);
+    });
+  }catch(err){/* Sound is optional. Game keeps working. */}
+}
+function toast(message){
+  $('toast').textContent=message;$('toast').classList.remove('hidden');
+  if(toastHandle)clearTimeout(toastHandle);
+  toastHandle=setTimeout(()=>$('toast').classList.add('hidden'),2200);
+}
+function init(){
+  for(const t of Object.keys(TOPICS)) if(t!=='pop')$('count-'+t).textContent=BANK.filter(x=>x.t===t).length+' Qs';
+  $('startBtn').addEventListener('click',startMatch);
+  $('restartBtn').addEventListener('click',()=>{if(window.confirm('Start a fresh match? Scores and the current board will reset.'))showSetup();});
+  $('againBtn').addEventListener('click',newRound);
+  $('backSetupBtn').addEventListener('click',showSetup);
+  $('helpBtn').addEventListener('click',()=>$('helpCover').classList.remove('hidden'));
+  $('closeHelpBtn').addEventListener('click',()=>$('helpCover').classList.add('hidden'));
+  $('soundBtn').addEventListener('click',()=>{sfxOn=!sfxOn;$('soundBtn').textContent=sfxOn?'♪ SFX ON':'♪ SFX OFF';$('soundBtn').setAttribute('aria-pressed',String(sfxOn));});
+  $('helpCover').addEventListener('click',e=>{if(e.target===$('helpCover'))$('helpCover').classList.add('hidden');});
+  document.addEventListener('keydown',handleKeys);
+  $('name1').addEventListener('keydown',e=>{if(e.key==='Enter')startMatch();});
+  $('name2').addEventListener('keydown',e=>{if(e.key==='Enter')startMatch();});
+  const bad=BANK.filter(x=>x.a.length!==4||x.c<0||x.c>3||!TOPICS[x.t]);if(bad.length)console.error('Question bank has invalid entries',bad);
+  console.info('Atomic Diner question bank:',BANK.length,'questions;',BANK.filter(x=>x.t==='pop').length,'Jukebox bonuses.');
+}
+function showSetup(){
+  $('endCover').classList.add('hidden');$('helpCover').classList.add('hidden');$('gameScreen').classList.add('hidden');$('setupScreen').classList.remove('hidden');S=null;window.scrollTo(0,0);
+}
+function startMatch(){
+  const active=[...document.querySelectorAll('#topicChecklist input[type=checkbox]:checked')].map(x=>x.value).filter(x=>TOPICS[x]&&x!=='pop');
+  if(!active.length){$('setupError').textContent='Choose at least one history topic to begin.';return;}
+  $('setupError').textContent='';
+  const p0=$('name1').value.trim().slice(0,18)||'Player 1',p1=$('name2').value.trim().slice(0,18)||'Player 2';
+  S={names:[p0,p1],current:0,board:Array.from({length:ROWS},()=>Array(COLS).fill(null)),question:null,answer:null,phase:'question',questionCount:0,used:new Set(),popUsed:new Set(),active,bonus:$('jukeboxToggle').checked,round:1,wins:[0,0],asked:[0,0],right:[0,0],tokens:[0,0],movesLeft:0,winningCells:[],lastDrop:null,lastWinner:null};
+  $('setupScreen').classList.add('hidden');$('gameScreen').classList.remove('hidden');
+  $('playerName0').textContent=p0;$('playerName1').textContent=p1;
+  $('endCover').classList.add('hidden');beginTurn();window.scrollTo(0,0);
+}
+function chooseQuestion(forceHistory=false){
+  const isBonus=S.bonus&&!forceHistory&&(S.questionCount+1)%5===0;
+  let base;
+  if(isBonus){
+    base=BANK.filter(x=>x.t==='pop'&&!S.popUsed.has(x));
+    if(!base.length){S.popUsed.clear();base=BANK.filter(x=>x.t==='pop');}
+    base=base[Math.floor(Math.random()*base.length)];S.popUsed.add(base);
+  }else{
+    const available=S.active.filter(t=>BANK.some(q=>q.t===t&&!S.used.has(q)));
+    if(!available.length){S.used.clear();available.push(...S.active);}
+    let total=available.reduce((sum,t)=>sum+TOPICS[t].weight,0),roll=Math.random()*total,topic=available.at(-1);
+    for(const t of available){roll-=TOPICS[t].weight;if(roll<0){topic=t;break;}}
+    const choices=BANK.filter(x=>x.t===topic&&!S.used.has(x));
+    base=choices[Math.floor(Math.random()*choices.length)];S.used.add(base);
+  }
+  const shuffled=shuffle(base.a.map((text,i)=>({text,original:i})));
+  return {q:base.q,a:shuffled.map(x=>x.text),c:shuffled.findIndex(x=>x.original===base.c),why:base.why,t:base.t,bonus:isBonus};
+}
+function beginTurn(forceHistory=false){
+  S.phase='question';S.question=chooseQuestion(forceHistory);S.answer=null;S.questionCount++;
+  updateHud();renderQuestion();renderBoard();
+}
+function updateHud(){
+  for(let i=0;i<2;i++){
+    $('playerHud'+i).classList.toggle('active',S.current===i);
+    $('playerMeta'+i).textContent=`${S.wins[i]} win${S.wins[i]===1?'':'s'} · ${S.right[i]}/${S.asked[i]} correct · ♜ ${S.tokens[i]} retry`;
+  }
+  $('roundInfo').textContent=`ROUND ${S.round} · QUESTION ${S.questionCount} · FIRST TO FOUR`; 
+}
+function renderQuestion(){
+  const box=$('questionArea'),q=S.question,p=S.current;
+  if(S.phase==='drop'){
+    const double=S.movesLeft>1;
+    box.innerHTML=`<div class="q-topline"><span class="card-label">ORDER UP!</span><span class="question-count">QUESTION ${S.questionCount}</span></div>
+      <div class="q-category">✓ RIGHT ANSWER</div>
+      <h2 class="question-text">${escapeHTML(S.names[p])}, place your ${double?'first':'next'} disc!</h2>
+      <div class="rules-box" style="font-size:17px;line-height:1.5;margin-top:18px"><strong>${double?'DOUBLE DIP! TWO DISCS':'YOUR MOVE'}</strong><br>Select any open column on the board. A disc falls to the lowest open space.</div>
+      <div class="feedback" style="margin-top:19px"><strong>Why it matters:</strong><p>${escapeHTML(q.why)}</p></div>
+      <p class="hint" style="margin-top:25px">CLICK A COLUMN OR PRESS NUMBER 1–7</p>`;
+    return;
+  }
+  const answered=S.phase!=='question';
+  const badge=q.bonus?'♫ JUKEBOX BONUS':'★ '+TOPICS[q.t].label.toUpperCase();
+  const answers=q.a.map((a,i)=>{
+    const cls=answered?(i===q.c?'correct':i===S.answer?'wrong':''):'';
+    const dis=answered?'disabled':'';
+    return `<button type="button" class="answer ${cls}" data-answer="${i}" ${dis}><span class="letter">${'ABCD'[i]}</span><span>${escapeHTML(a)}</span></button>`;
+  }).join('');
+  let extra='';
+  if(answered){
+    const right=S.answer===q.c;
+    const heading=right?'DING! THAT’S RIGHT.':'NOT QUITE. GOOD TRY.';
+    extra=`<div class="feedback ${right?'':'bad'}"><strong>${heading}</strong><p>${right?'':`Correct answer: <strong>${'ABCD'[q.c]}. ${escapeHTML(q.a[q.c])}</strong><br>`}${escapeHTML(q.why)}</p></div>`;
+    if(right&&q.bonus){
+      extra+=`<div class="boost-choices"><div class="mini-overline">CHOOSE YOUR JUKEBOX POWER-UP</div>
+      <button class="diner-btn red" id="doubleDip" type="button">🍒 DOUBLE DIP<small>Drop TWO discs this turn. Four in a row still wins immediately.</small></button>
+      <button class="diner-btn teal" id="saveToken" type="button">🥤 DO-OVER TOKEN<small>Drop ONE disc now and save a retry for a future missed history question.</small></button></div>`;
+    }else if(right){
+      extra+=`<div class="feedback-actions"><button id="answerContinue" class="diner-btn teal" type="button">↓ DROP YOUR DISC</button></div>`;
+    }else if(S.tokens[p]>0&&!q.bonus){
+      extra+=`<div class="feedback-actions"><button id="retryBtn" class="diner-btn teal" type="button">🥤 USE RETRY TOKEN (${S.tokens[p]})</button><button id="answerContinue" class="diner-btn white" type="button">PASS TURN →</button></div>`;
+    }else{
+      extra+=`<div class="feedback-actions"><button id="answerContinue" class="diner-btn white" type="button">NEXT PLAYER →</button></div>`;
+    }
+  }
+  box.innerHTML=`<div class="q-topline"><span class="card-label">${q.bonus?'★ MUSIC & MILKSHAKES':'★ HISTORY SPECIAL'}</span><span class="question-count">QUESTION ${S.questionCount}</span></div>
+    <span class="q-category ${q.bonus?'jukebox':''}">${badge}</span>
+    <h2 class="question-text">${escapeHTML(q.q)}</h2>
+    <div class="answers">${answers}</div>${extra}
+    ${!answered?`<div class="question-bottom"><p class="hint">${escapeHTML(S.names[p])}'S TURN · SELECT A–D OR PRESS 1–4</p></div>`:''}`;
+  if(!answered){box.querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>answerQuestion(Number(b.dataset.answer))));}
+  else{
+    const cont=$('answerContinue');if(cont)cont.addEventListener('click',()=>{if(S.answer===q.c){unlockDrop(1);}else nextPlayer();});
+    const dd=$('doubleDip');if(dd)dd.addEventListener('click',()=>unlockDrop(2));
+    const tok=$('saveToken');if(tok)tok.addEventListener('click',()=>{S.tokens[p]++;unlockDrop(1);});
+    const rt=$('retryBtn');if(rt)rt.addEventListener('click',()=>{S.tokens[p]--;sound('good');beginTurn(true);toast('Do-Over! New history question, same player.');});
+  }
+}
+function answerQuestion(i){
+  if(!S||S.phase!=='question'||i<0||i>3)return;
+  S.answer=i;S.phase='feedback';S.asked[S.current]++;
+  if(i===S.question.c){S.right[S.current]++;sound('good');}else sound('bad');
+  updateHud();renderQuestion();
+}
+function unlockDrop(count){S.movesLeft=count;S.phase='drop';renderQuestion();renderBoard();sound('drop');}
+function nextPlayer(){S.current=1-S.current;beginTurn();}
+function renderBoard(){
+  const row=$('dropRow'),board=$('connectBoard'),unlocked=S.phase==='drop';
+  row.innerHTML='';board.innerHTML='';
+  for(let col=0;col<COLS;col++){
+    const b=document.createElement('button');b.type='button';b.className='drop-arrow';b.textContent='↓';b.title=`Drop disc in column ${col+1}`;
+    b.setAttribute('aria-label',`Drop disc in column ${col+1}`);b.disabled=!unlocked||S.board[0][col]!==null;
+    b.addEventListener('click',()=>dropDisc(col));row.appendChild(b);
+  }
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const cell=document.createElement('button');cell.type='button';cell.className='board-cell';
+    cell.setAttribute('role','gridcell');cell.setAttribute('aria-label',`Row ${r+1}, column ${c+1}: ${S.board[r][c]===null?'empty':S.names[S.board[r][c]]}`);
+    const mark=S.board[r][c];
+    if(mark!==null){const disc=document.createElement('span');disc.className='disc p'+mark;cell.appendChild(disc);}
+    if(S.winningCells.some(([wr,wc])=>wr===r&&wc===c))cell.classList.add('winning');
+    if(S.lastDrop&&S.lastDrop[0]===r&&S.lastDrop[1]===c)cell.classList.add('newdrop');
+    if(unlocked&&S.board[0][c]===null){cell.classList.add('clickable');cell.addEventListener('click',()=>dropDisc(c));}
+    else cell.disabled=true;
+    board.appendChild(cell);
+  }
+  if(S.phase==='drop'){
+    $('boardSubtitle').textContent=`${S.names[S.current]}: ${S.movesLeft} disc${S.movesLeft===1?'':'s'} to place`;
+    $('boardStatus').textContent='Choose an open column above ↓';
+  }else if(S.phase==='gameover'){
+    $('boardSubtitle').textContent='Round complete!';$('boardStatus').textContent='Play another round to keep the match going.';
+  }else{
+    $('boardSubtitle').textContent=`${S.names[S.current]}, answer correctly to unlock a disc`;
+    $('boardStatus').textContent='No disc until a correct answer.';
+  }
+}
+function dropDisc(col){
+  if(!S||S.phase!=='drop'||col<0||col>=COLS)return;
+  let row=-1;
+  for(let r=ROWS-1;r>=0;r--)if(S.board[r][col]===null){row=r;break;}
+  if(row===-1){toast('That column is full. Choose another!');return;}
+  S.board[row][col]=S.current;S.lastDrop=[row,col];sound('drop');
+  const win=findWinner(row,col,S.current);
+  if(win){S.winningCells=win;S.wins[S.current]++;S.lastWinner=S.current;S.phase='gameover';updateHud();renderBoard();showEnd(true);return;}
+  if(S.board[0].every(x=>x!==null)){S.phase='gameover';S.lastWinner=null;renderBoard();showEnd(false);return;}
+  S.movesLeft--;
+  if(S.movesLeft>0){renderQuestion();renderBoard();}
+  else nextPlayer();
+}
+function findWinner(row,col,player){
+  for(const [dr,dc] of [[0,1],[1,0],[1,1],[1,-1]]){
+    const cells=[[row,col]];
+    for(const sign of [1,-1]){
+      for(let n=1;n<=3;n++){
+        const r=row+dr*n*sign,c=col+dc*n*sign;
+        if(r<0||r>=ROWS||c<0||c>=COLS||S.board[r][c]!==player)break;
+        cells.push([r,c]);
+      }
+    }
+    if(cells.length>=4)return cells;
+  }
+  return null;
+}
+function showEnd(won){
+  $('endCover').classList.remove('hidden');
+  $('endIcon').textContent=won?'🏆':'🥤';
+  $('endTitle').textContent=won?'FOUR IN A ROW!':'A TASTY TIE!';
+  $('endText').textContent=won?`${S.names[S.current]} wins Round ${S.round}! Diner scoreboard: ${S.wins[0]}–${S.wins[1]}.`:`The board is full! Nobody connected four. Score: ${S.wins[0]}–${S.wins[1]}.`;
+  sound(won?'win':'good');
+}
+function newRound(){
+  if(!S)return;
+  S.round++;S.current=S.lastWinner===null?(S.round%2===0?1:0):1-S.lastWinner;
+  S.board=Array.from({length:ROWS},()=>Array(COLS).fill(null));S.lastDrop=null;S.winningCells=[];S.movesLeft=0;
+  $('endCover').classList.add('hidden');beginTurn();window.scrollTo(0,0);
+}
+function handleKeys(e){
+  if(e.target&&['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
+  if(e.key==='Escape'){$('helpCover').classList.add('hidden');return;}
+  if(!$('helpCover').classList.contains('hidden')||!$('endCover').classList.contains('hidden')||!S)return;
+  if(e.key>='1'&&e.key<='7'&&e.key.length===1){
+    const num=Number(e.key);
+    if(S.phase==='question'&&num<=4){answerQuestion(num-1);e.preventDefault();}
+    else if(S.phase==='drop'){dropDisc(num-1);e.preventDefault();}
+  }
+  if(e.key==='Enter'&&S.phase==='feedback'){
+    const btn=$('answerContinue');if(btn){btn.click();e.preventDefault();}
+  }
+}
+init();
+</script>
+</body>
+</html>
